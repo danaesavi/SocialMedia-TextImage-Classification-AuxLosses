@@ -1,4 +1,4 @@
-# SocialMedia-TextImage-Classification
+# SocialMedia-TextImage-Classification-AuxLosses
 A collection of multimodal models enhanced with auxiliary losses designed specifically for social media text-image classification tasks. 
 
 
