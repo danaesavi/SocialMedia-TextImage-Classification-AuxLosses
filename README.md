@@ -16,10 +16,10 @@ Multimodal fusion using text-image relationship
    ```DATA_PATH = "SocialMedia-TextImage-Classification-AuxLosses/data/"```
 
    DATA KEY FILES
-    - The data_key_*.csv should be placed in DATA_PATH. Dummy examples are in [SocialMedia-TextImage-Classification-AuxLosses/data](https://github.com/danaesavi/ocialMedia-TextImage-Classification-AuxLosses/tree/main/data).
+    - The data_key_*.csv should be placed in DATA_PATH. Dummy examples are in [SocialMedia-TextImage-Classification-AuxLosses/data](https://github.com/danaesavi/SocialMedia-TextImage-Classification-AuxLosses/tree/main/data).
 
    IMAGES
-    - Image examples can be found in SocialMedia-TextImage-Classification-AuxLosses/data/MSD/dataset_image (sarcasm detection) and ocialMedia-TextImage-Classification-AuxLosses/data/MVSA-Single/data (sentiment analysis)
+    - Image examples can be found in [SocialMedia-TextImage-Classification-AuxLosses/data/MSD/dataset_image](https://github.com/danaesavi/SocialMedia-TextImage-Classification-AuxLosses/tree/main/data/MSD/dataset_image) (sarcasm detection) and [SocialMedia-TextImage-Classification-AuxLosses/data/MVSA-Single/data](https://github.com/danaesavi/SocialMedia-TextImage-Classification-AuxLosses/tree/main/data/MVSA-Single/data) (sentiment analysis)
     - They should be placed in DATA_PATH+'data/MSD/dataset_image' and DATA_PATH+'MVSA-Single/data' respectively  
 
    DATASETS:
