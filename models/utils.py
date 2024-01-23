@@ -165,11 +165,7 @@ def prepare_data(data, num_labels, testing=False,nsamples=-1, compute_class_weig
     print("train", len(train))
     print("val", len(val))
     print("test", len(test))
-    #print(train.label.value_counts())
-    #print("val")
-    #print(val.label.value_counts())
-    #print("test")
-    #print(val.label.value_counts())
+
     
     if compute_class_weights:
         if not multilabel:
@@ -274,56 +270,12 @@ def loss_correction(T,loss_fn, output, label):
             loss[i] = one_minus_eneg * loss_one[i] - eplus *loss_zero[i]
         loss[i] = loss[i]/(one_minus_eplus-eneg)
 
-    #print("loss", loss)
-    #print("loss", loss.size())
+
     loss = loss.mean()
-    #print("loss", loss)
-    #print("loss", loss.size())
+
     return loss
 
-# class TIRLoss(nn.Module):
-#     def __init__(self, weight):
-#         super(TIRLoss, self).__init__()
-#         self.weight = weight
 
-#     def forward(self, output, target, similarity_score):
-#         print("out",output.size())
-#         print("target",target.size())    
-#         loss = F.cross_entropy(output,target,weight=self.weight,reduction="none")
-#         print("loss",loss.size())
-#         print("loss",loss.mean())
-#         loss = loss - similarity_score
-#         loss = loss.mean()
-#         print("new loss", loss)
-#         return loss
-
-# class CustomLoss(nn.Module):
-#     def __init__(self, pos_weight):
-#         super(CustomLoss, self).__init__()
-#         self.pos_weight = pos_weight
-#         self.criterion =nn.BCEWithLogitsLoss(pos_weight = self.pos_weight)
-
-
-#     def forward(self, output, target, x_t, x_v):
-#         #target = torch.LongTensor(target)
-        
-#         loss = self.criterion(output, target)
-#         print("xt", x_t.size())
-#         print("xv", x_v.size())
-#         x_t = normalize(x_t, dim=1)
-#         x_v = normalize(x_v, dim=1)
-#         m_batchsize, _ = x_t.size()
-#         d = torch.bmm(x_t.view(m_batchsize,1,fixed_feat_size),x_v.view(m_batchsize,fixed_feat_size,1))
-#         print("d", d.size())
-#         d = torch.squeeze(d).mean()
-#         print("d",d)
-    
-#         print("loss",loss)
-#         loss = loss + d
-#         print("new loss", loss)
-        
-        
-#         return loss
 
 def get_optimizer_params(named_parameters, weight_decay, lr, verbose = False):
         optimizer_params = []

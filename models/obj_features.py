@@ -62,7 +62,6 @@ def preprocess_vilt(empty_image=None, normalization=True, max_length = 40):
         data_id = data_ids[index]
         if data_id not in done_ids:
             # text
-            #logger.info("data id: {}, text: {}".format(data_id, texts[index]))
             text = tweet_preprocessing.normalizeTweet(texts[index]) if normalization else texts[index]
             # img
             if empty_image == None:
@@ -88,7 +87,7 @@ def preprocess_vilt(empty_image=None, normalization=True, max_length = 40):
                     )  
                 
                 # save
-                #print("item", inputs.keys())
+               
                 torch.save(inputs, DATA_PATH + '{}_img_feats/vilt/input_{}'.format(task_name, data_id))
                 done_ids.add(data_id)
             except:
@@ -112,7 +111,6 @@ def preprocess_mm(img_model_name,txt_model_name, empty_image=None, normalization
         data_id = data_ids[index]
         if data_id not in done_ids:
             # text
-            #print(index,texts[index])
             text = tweet_preprocessing.normalizeTweet(texts[index]) if normalization else texts[index]
             # img
             if empty_image == None:
@@ -199,11 +197,4 @@ if __name__ == "__main__":
 
 
 
-# DEPRECATED
-# nbox_file_path = '../data/mvsa_img_feats/boxes/nbox_{}'.format(index)
-# feat_file_path = '../data/mvsa_img_feats/features/feat_{}'.format(index)
-# features =  torch.load(feat_file_path)
-# normalized_boxes = torch.load(nbox_file_path)
-# print(index)
-# print("features", features.size())
-# print("normalized_boxes", normalized_boxes.size())
+

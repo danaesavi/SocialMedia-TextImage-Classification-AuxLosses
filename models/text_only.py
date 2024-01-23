@@ -37,26 +37,6 @@ class BERT(nn.Module):
         #dropout_output = self.dropout(pooled_output)
         linear_output = self.linear(dropout_output)
         return linear_output
-
-# class BERT(nn.Module):
-#     def __init__(self,txt_model_dir, num_labels, dropout=0.1, text_pooling_type="max"):
-#         super(BERT, self).__init__()
-#         self.txt_encoder = AutoModel.from_pretrained(txt_model_dir)
-#         self.text_pooling_type = text_pooling_type
-#         for param in self.txt_encoder.parameters():
-#             param.requires_grad = False
-#         self.linear_text = nn.Sequential(nn.Linear(txt_feat_size, txt_feat_size), nn.Dropout(p=dropout))
-#         self.linear = nn.Linear(txt_feat_size, num_labels)
-        
-#     def forward(self,ids,mask,token_type_ids):
-#         last_hidden, pooled_output= self.txt_encoder(ids,attention_mask=mask,token_type_ids=token_type_ids, return_dict=False)
-#         if self.text_pooling_type == 'max':
-#             x_t = masked_max(last_hidden, mask, dim=1)
-#         elif self.text_pooling_type == 'avg':
-#             x_t = masked_mean(last_hidden, mask, dim=1)
-#         x_t = self.linear_text(x_t)
-#         linear_output = self.linear(x_t)
-#         return linear_output
    
 class BERNICE(nn.Module):
     def __init__(self,model_dir, num_labels, dropout=0.1):
@@ -220,7 +200,6 @@ class TextModel(object):
         if model_path != None:
             torch.save(self.model.state_dict(), model_path)
             logger.info("{} saved".format(model_path))
-        #return res_val
 
     def eval(self, dataloader, loss_fn):
         eval_acc = []
@@ -276,11 +255,8 @@ class TextModel(object):
         print(f'loss: {eval_loss:.4f} acc: {(eval_acc):.4f}\n')
         
         y_pred = torch.stack(predictions)
-        #print("y_pred",y_pred)
         y = torch.stack(labels)
-        #print("y",y)
         data_ids = torch.stack(data_ids)
-        #print()
 
         res = {
             "data_id": data_ids,

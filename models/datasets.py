@@ -101,7 +101,6 @@ class ImgOnlyCNN_Dataset(Dataset):
             self.data_ids_num = [float(x[2:]) for x in self.data_ids]
         else:
             self.data_ids_num = self.data_ids
-        #self.data_ids_num = [float(x.split("_")[0]) for x in self.data_ids] if self.task_name == "poi" else self.data_ids
         self.labels = labels
         self.img_file_fmt = img_file_fmt
 

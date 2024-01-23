@@ -28,7 +28,7 @@ parser.add_argument('--beta_iadds', type=float, default=0.1, help='hyperparamete
 parser.add_argument('--beta_itc', type=float, default=0.1, help='hyperparameter for itc loss')
 parser.add_argument('--beta_itm', type=float, default=0.1, help='hyperparameter for itm loss')
 parser.add_argument('--use_loss_correction', action='store_true', help='use Loss correction (only for binary cases)')
-parser.add_argument('--task', type=int, choices=[0,1,2,3,4,5,6,7,8,9,10,17,18,19], help='task to run')
+parser.add_argument('--task', type=int, choices=[0,1,2,3,4,5,6], help='task to run')
 parser.add_argument('--epochs', type=int, default=2, help='number of epochs')
 parser.add_argument('--weight_decay', type=float, default=0.00025, help='weight decay param')
 parser.add_argument('--lr', type=float, default=1e-5, help='learning rate param')

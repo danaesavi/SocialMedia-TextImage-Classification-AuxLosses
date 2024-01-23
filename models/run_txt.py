@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 # ------ ARGS -------------------------------------------------------
 parser = argparse.ArgumentParser(description='run text-only models')
 parser.add_argument('--model_name', type=str, choices=["bert","bernice","bertweet","roberta"],help='model name')
-parser.add_argument('--task', type=int, choices=[0,1,2,3,4,5,6,17,18,19], help='task to run')
+parser.add_argument('--task', type=int, choices=[0,1,2,3,4,5,6], help='task to run')
 parser.add_argument('--use_loss_correction', action='store_true', help='use Loss correction (only for binary cases)')
 parser.add_argument('--epochs', type=int, default=2, help='number of epochs')
 parser.add_argument('--weight_decay', type=float, default=0.00025, help='weight decay param')
