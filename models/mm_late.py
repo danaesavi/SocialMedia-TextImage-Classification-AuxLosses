@@ -136,12 +136,9 @@ class MM_Model(nn.Module):
             #x_v: 16 X 197 X 768
             # gmu fusion
             x_v_prime = self.linear_gmu_v(x_v[:, 0, :])
-            print("x_v_prime",x_v_prime.size())
             x_t_prime = self.linear_gmu_t(x_t[:, 0, :])
-            print("x_t_prime",x_t_prime.size())
             xt_cat_xv = torch.cat((x_t[:, 0, :],x_v[:, 0, :]), dim=1)
             z = self.z(xt_cat_xv)
-            print("z",z.size())
             xt_xv = z * x_t_prime + (1 - z) * x_v_prime 
             xt_xv = self.relu(self.linear_fusion(xt_xv))  
             return xt_xv
@@ -240,30 +237,18 @@ class Self_Attn2(nn.Module):
         """
         m_batchsize,C,width ,height = last_conv.size()
         C = 200
-        # proj_query  = self.query_conv(x).view(m_batchsize,-1,width*height).permute(0,2,1) # B X CX(N)
-        # print("proj query", proj_query.size())
-        # proj_query = self.linear_proj_1(proj_query)
-        # print("proj query", proj_query.size())
-        print("att text")
+     
         # text
-        print("proj query", last_hidden.size())
         proj_query = self.linear_proj_3(last_hidden)
-        print("proj query", proj_query.size())
 
         proj_key =  self.key_conv(last_conv).view(m_batchsize,-1,width*height) # B X C x (*W*H)
-        print("proj key", proj_key.size())
         proj_key =  self.linear_proj_1(proj_key.permute(0,2,1)) # B X C=FIXED X (W*H)
-        print("proj key", proj_key.size())
         
         proj_value = self.value_conv(last_conv).view(m_batchsize,-1,width*height) # B X C X N
-        print("proj value", proj_value.size()) # 32 x 2048 x 49
         proj_value =  self.linear_proj_2(proj_value.permute(0,2,1))  # B X C=FIXED X (W*H)
-        print("proj value", proj_value.size())
     
         out, attention = self.att(proj_query,proj_key,proj_value)
-        print("out",out.size())
-        print("att",attention.size())
-        print()
+        
 
         return out, attention
 
@@ -295,159 +280,20 @@ class Self_Attn1(nn.Module):
         m_batchsize,C,width ,height = last_conv.size()
         C = 768 # 200
         proj_query  = self.query_conv(last_conv).view(m_batchsize,-1,width*height).permute(0,2,1) # B X CX(N)
-        print("proj query", proj_query.size())
         proj_query = self.linear_proj_1(proj_query)
-        print("proj query", proj_query.size())
         # text
-        print("proj key", last_hidden.size())
         proj_key = self.linear_proj_3(last_hidden)
-        print("proj key", proj_query.size())
         # text
-        print("proj value", last_hidden.size())
         proj_value = self.linear_proj_3(last_hidden)
-        print("proj value", proj_query.size())
     
         out, attention = self.att(proj_query,proj_key,proj_value)
-        print("out",out.size())
-        print("att",attention.size())
 
         out = out.permute(0,2,1)
-        print("out",out.size())
         out = out.view(m_batchsize,C,width,height)
-        print("out",out.size())
-        print()
 
         return out, attention
 
-class XATT(nn.Module):
-    def __init__(self, num_labels, txt_model_name, img_model_name, dropout, output_layer="layer4", feature_extract=False):
-        super(XATT, self).__init__()
-        self.num_labels = num_labels
-        self.txt_model_name = txt_model_name
-        txt_model_dir = MODEL_DIR_DICT[self.txt_model_name]
-        self.bert_model = AutoModel.from_pretrained(txt_model_dir)#("bert-base-uncased")
-        self.dropout = nn.Dropout(dropout)
-        self.linear = nn.Linear(200, self.num_labels)
-       
-        # image
-        self.output_layer = output_layer
-        self.feature_extract = feature_extract
-        self.pretrained = get_conv_model(img_model_name)
-        self.img_model_name = img_model_name
-        img_model_dir = MODEL_DIR_DICT[self.img_model_name]
-        self.pretrained.load_state_dict(torch.load(img_model_dir))
-        self.children_list = []
-        for n,c in self.pretrained.named_children():
-            self.children_list.append(c)
-            if n == self.output_layer:
-                break
 
-        self.net = nn.Sequential(*self.children_list)
-        self.pretrained = None
-        self.set_parameter_requires_grad()        
-        self.att_txt = Self_Attn2(img_feat_size_cnn) # 2048
-        self.att_img = Self_Attn1(img_feat_size_cnn) # 2048
-        self.avg_pool = nn.AvgPool2d(7)
-        self.num_ftrs = fixed_feat_size #200      #2048
-        self.num_labels = num_labels
-        self.linear = nn.Linear(self.num_ftrs, self.num_labels)
-        params_to_update = self.net.parameters()
-        print("Params to learn:")
-        if self.feature_extract:
-            params_to_update = []
-            for name,param in self.net.named_parameters():
-                if param.requires_grad == True:
-                    params_to_update.append(param)
-                    print("\t",name)
-        else:
-            for name,param in self.net.named_parameters():
-                if param.requires_grad == True:
-                    print("\t",name)
-        self.params_to_update = params_to_update
-
-    def set_parameter_requires_grad(self):
-        if self.feature_extract:
-            for param in self.net.parameters():
-                param.requires_grad = False
-        
-    def forward(self,ids,mask,token_type_ids,img):
-        last_hidden, pooled_output= self.bert_model(ids,attention_mask=mask,token_type_ids=token_type_ids, return_dict=False)
-        last_conv = self.net(img)
-
-        attn_output_txt, attn_output_weights_txt = self.att_txt(last_hidden,last_conv)
-        attn_output_img, attn_output_weights_img = self.att_img(last_hidden,last_conv)         
-        pooled_output_txt = attn_output_txt[:,0,:]
-        pooled_output_img = self.avg_pool(attn_output_img)
-        pooled_output_img = torch.squeeze(pooled_output_img)
-        pooled_output = pooled_output_txt + pooled_output_img
-        dropout_output = self.dropout(pooled_output)
-        linear_output = self.linear(dropout_output)
-        return linear_output, pooled_output_txt, pooled_output_img
-
-class CNNImgConcat(nn.Module):
-    def __init__(self, num_labels, txt_model_name, img_model_name, dropout, pooling_type='max', output_layer="layer4"):
-        super(CNNImgConcat, self).__init__()
-        self.num_labels = num_labels
-        self.output_layer = output_layer
-        # image
-        self.img_model_name = img_model_name
-        img_model_dir = MODEL_DIR_DICT[self.img_model_name]
-        original_img_model = get_conv_model(self.img_model_name)
-        original_img_model.load_state_dict(torch.load(img_model_dir))
-        self.children_list = []
-        for n,c in original_img_model.named_children():
-            self.children_list.append(c)
-            if n == self.output_layer:
-                break
-        self.img_encoder = nn.Sequential(*self.children_list)
-        #self.img_encoder = torch.nn.Sequential(*(list(original_img_model.children())[:-1]))
-        for param in self.img_encoder.parameters():
-            param.requires_grad = False
-        original_img_model = None
-        self.img_encoder = self.img_encoder.to(device)
-        self.img_avg_pool = nn.AvgPool2d(7)
-        #text
-        self.txt_model_name = txt_model_name
-        txt_model_dir = MODEL_DIR_DICT[self.txt_model_name]
-        self.txt_encoder = AutoModel.from_pretrained(txt_model_dir)
-        self.pooling_type = pooling_type
-        for param in self.txt_encoder.parameters():
-                param.requires_grad = False
-        self.txt_encoder = self.txt_encoder.to(device)
-        #projection layers
-        self.linear_img = nn.Linear(img_feat_size_cnn, fixed_feat_size)
-        self.linear_text = nn.Sequential(nn.Linear(txt_feat_size, fixed_feat_size), nn.Dropout(p=dropout))
-        self.linear_fusion = nn.Linear(fixed_feat_size * 2, fixed_feat_size)
-        self.linear_cls = nn.Linear(fixed_feat_size, self.num_labels)
-   
-    def forward(self,ids,mask,token_type_ids,img):
-        # image
-        x_v = self.img_encoder(img)
-        #x_v = x_v.mean(3).mean(2).squeeze()
-        x_v = self.img_avg_pool(x_v)
-        x_v = torch.squeeze(x_v)
-        x_v = self.linear_img(x_v)
-        if len(x_v.size()) < 2:
-            x_v = torch.unsqueeze(x_v,0)
-        # text
-        last_hidden, pooled_output= self.txt_encoder(ids,attention_mask=mask,token_type_ids=token_type_ids, return_dict=False)
-        # if self.pooling_type == 'max':
-        #     x_t = masked_max(last_hidden, mask, dim=1)
-        # elif self.pooling_type == 'avg':
-        #     x_t = masked_mean(last_hidden, mask, dim=1)
-        # x_t = self.linear_text(x_t)
-        x_t = pooled_output
-        # concat - classifier
-        print("concat")
-        print("xt", x_t.size())
-        print("xv", x_v.size())
-        print()
-        
-        xt_xv = torch.cat((x_t, x_v), dim=1)
-        xt_xv = self.linear_fusion(xt_xv)
-        out_cls = self.linear_cls(xt_xv)
-        
-        return out_cls, x_t, x_v
 
 class MMLate_Model(object):
     """
@@ -542,7 +388,6 @@ class MMLate_Model(object):
     
     def prepare_itm_inputs(self, ids, mask):
         # replace text with 0.5 probability
-        # make copies
         tim_ids = ids.clone().detach()
         tim_mask = mask.clone().detach()
         labels_tim = []
@@ -608,7 +453,6 @@ class MMLate_Model(object):
                 # forward
                 if self.cnn:
                     output, x_t, x_v = self.model(ids,mask,token_type_ids,pixel_values)
-                    #similarity_score = compute_batch_dot_product(x_t,x_v)
                 else:
                     if self.use_tim_loss:
                         # TIM task
@@ -622,12 +466,7 @@ class MMLate_Model(object):
                             tim_inputs=tim_inputs,
                             iadds_task=self.use_iadds_loss
                             )
-                    #print("output",output)
-                    
-                    # # downstream task
-                    # output, logits_per_text, _, _ = self.model(
-                    #     ids,mask,pixel_values
-                    #     )
+                  
 
                 label = label.type_as(output)
                 # compute loss
@@ -735,7 +574,7 @@ class MMLate_Model(object):
                         tim_inputs=tim_inputs,
                         iadds_task=self.use_iadds_loss
                         )
-                    #print("output",output)
+                 
                         
             # Compute loss
             label = label.type_as(output)
@@ -767,9 +606,7 @@ class MMLate_Model(object):
             # Calculate the accuracy rate
             accuracy = (pred == target).cpu().numpy().mean() * 100
             eval_acc.append(accuracy)
-            # Save predictions and targets
-            #soft_preds_0 += soft_pred_0
-            #soft_preds_1 += soft_pred_1
+          
             predictions += pred
             labels += target
             data_ids += data_id
@@ -826,7 +663,6 @@ class MMLate_Model(object):
             with torch.no_grad():
                 if self.cnn:
                     output, x_t, x_v = self.model(ids,mask,token_type_ids,pixel_values)
-                    #similarity_score = compute_batch_dot_product(x_t,x_v)
                 else:
                     if self.use_tim_loss:
                         # TIM task
@@ -848,25 +684,18 @@ class MMLate_Model(object):
             else:
                 soft_pred = self.softmax(output)
                 pred = torch.argmax(soft_pred, dim=1)
-            #soft_pred_0 = soft_pred[:,0]
-            #soft_pred_1 = soft_pred[:,1]
-            
-            # Save predictions and targets
-            #soft_preds_0 += soft_pred_0
-            #soft_preds_1 += soft_pred_1
+           
             predictions += pred
             data_ids += data_id
         
-        #y_soft_pred_0 = torch.stack(soft_preds_0)
-        #y_soft_pred_1 = torch.stack(soft_preds_1)
+      
         y_pred = torch.stack(predictions)
         data_ids = torch.stack(data_ids)
         
         res = {
             "data_id": data_ids,
             "predictions": y_pred,
-            #"soft_pred_0": y_soft_pred_0,
-            #"soft_pred_1": y_soft_pred_1,
+          
         }
         
         return res

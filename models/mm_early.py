@@ -381,20 +381,7 @@ class MMEarly_Model(object):
                 loss.backward()
                 optimizer.step()
                 optimizer.zero_grad()
-                # predict
-                # if not self.multilabel:
-                #     pred = torch.argmax(self.softmax(output),dim=1)  
-                #     target = torch.argmax(label,dim = 1)          
-                #     num_correct = torch.sum(pred==target).item()
-                #     num_samples = label.size(0)
-                #     logger.info(f'Got {num_correct} / {num_samples} with accuracy {float(num_correct)/float(num_samples)*100:.2f}')
-                # else:
-                #     pred = self.sigmoid(output)
-                #     pred = torch.round(pred)
-                    #num_correct = torch.sum(pred==label).item()
-                    #num_samples = label.size(0)
-                    #print(f'Got {num_correct} / {num_samples} with accuracy {float(num_correct)/float(num_samples)*100:.2f}')
-            
+               
             # predict val
             res_val_d = self.eval(val_dataloader,loss_fn,tim_loss_fn=tim_loss_fn)
             res_val_d["epoch"] = epoch
@@ -418,7 +405,6 @@ class MMEarly_Model(object):
         if model_path != None:
             torch.save(self.model.state_dict(), model_path)
             logger.info("{} saved".format(model_path))
-        #return res_val
 
     def eval(self, dataloader, loss_fn, tim_loss_fn=None):
         eval_acc = []
@@ -518,9 +504,7 @@ class MMEarly_Model(object):
         logger.info(f'test loss: {eval_loss:.4f} test acc: {(eval_acc):.4f}\n')
         
         y_pred = torch.stack(predictions)
-        #print("y_pred",y_pred)
         y = torch.stack(labels)
-        #print("y",y)
         data_ids = torch.stack(data_ids)
         
         res = {
