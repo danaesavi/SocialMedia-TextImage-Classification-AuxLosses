@@ -33,8 +33,6 @@ Multimodal fusion using text-image relationship
 Example of how to run Ber-ViT-Att (testing: uses a sample of 100 data points of the corresponding dataset)
 
 ```
-module load Anaconda3
-module load CUDA
 source activate timrel-env
 python3 run_mm_late.py --txt_model_name bernice --img_model_name vit --fusion_name attention --task 2 --epochs 7 --seed 40 --testing
 ```
