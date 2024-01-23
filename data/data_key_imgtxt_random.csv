@@ -1,0 +1,1 @@
+index,tweet_id,user_id,text,text_is_represented,image_adds,image_adds_text_repr,image_adds_text_notrepr,image_notadds_text_repr,image_notadds_text_notrepr,split
