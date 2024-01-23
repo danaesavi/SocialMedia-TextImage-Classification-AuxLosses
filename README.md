@@ -22,7 +22,7 @@ Multimodal fusion using text-image relationship
     - Image examples can be found in SocialMedia-TextImage-Classification-AuxLosses/data/MSD/dataset_image (sarcasm detection) and ocialMedia-TextImage-Classification-AuxLosses/data/MVSA-Single/data (sentiment analysis)
     - They should be placed in DATA_PATH+'data/MSD/dataset_image' and DATA_PATH+'MVSA-Single/data' respectively  
 
-   Datasets:
+   DATASETS:
     - [TIR](https://github.com/danielpreotiuc/text-image-relationship/) | [Paper](https://aclanthology.org/P19-1272.pdf)
     - [MVSA](http://mcrlab.net/research/mvsa-sentiment-analysis-on-multi-view-social-data/) | [Paper](https://link.springer.com/chapter/10.1007/978-3-319-27674-8_2)
     - [MHP](https://zenodo.org/record/5123567#.Y-OAq-zP1pR) | [Paper](https://aclanthology.org/2021.findings-acl.166.pdf)
